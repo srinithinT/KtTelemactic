@@ -1,0 +1,50 @@
+extends layout
+
+block content
+  h1(style='font-size: 2rem; font-weight: bold; color: #343a40; text-align: center; margin-bottom: 2rem;') Returned Assets
+  .table-container(style='overflow-x: auto; padding: 0 1rem;') 
+    table#returns-table.table.table-sm.table-striped.table-bordered(style='margin: 0 auto;')
+      thead
+        tr
+          th(style='text-align: center;') Employee Name
+          th(style='text-align: center;') Asset Name
+          th(style='text-align: center;') Issued At
+          th(style='text-align: center;') Returned At
+          th(style='text-align: center;') Quantity
+      tbody
+        each retur in returns
+          tr
+            td.text-center= retur.Employee.name
+            td.text-center= retur.Asset.model
+            td.text-center= retur.createdAt
+            td.text-center= retur.returnedAt
+            td.text-center= retur.quantityHistory
+        if returns.length === 0
+          .no-returns-message
+            p.text-center.text-danger(style='font-size: 1.25rem;') There are no returns available yet.
+
+  script(src='https://code.jquery.com/jquery-3.5.1.min.js')
+  script(src='https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js')
+  script(src='https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js')
+  script(src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js')
+  link(rel='stylesheet' href='https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css')
+  link(rel='stylesheet' href='https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css')
+  link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css')
+
+
+  script.
+    $(document).ready(function() {
+      $('#returns-table').DataTable({
+        "pagingType": "simple_numbers",
+        "paging": true,
+        "ordering": true,
+        "info": true,
+        "language": {
+          "paginate": {
+            "previous": "&laquo;",
+            "next": "&raquo;"
+          }
+        }
+      });
+
+      

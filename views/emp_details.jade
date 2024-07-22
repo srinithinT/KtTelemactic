@@ -1,0 +1,221 @@
+extends layout
+
+block content
+  h1.text-center Employee Details
+
+  .container
+    .card.card-body
+      .nav.nav-tabs(id='myTab', role='tablist')
+        a.nav-item.nav-link.active(id='editEmployeeTab' data-toggle='tab' href='#editEmployee' role='tab' aria-controls='editEmployee' aria-selected='true') Edit Employee
+        a.nav-item.nav-link(id='addAssetTab' data-toggle='tab' href='#addAsset' role='tab' aria-controls='addAsset' aria-selected='false') Add Asset
+
+      .tab-content.mt-3
+        .tab-pane.fade.show.active(id='editEmployee' role='tabpanel' aria-labelledby='editEmployeeTab')
+          form(id='employeeForm' action=`/employees/edit/${employee.id}` method='post')
+            input(type='hidden' name='id' value=employee.id)
+            .row
+              .col-md-6
+                .form-group
+                  label(for='name') Name
+                  input.form-control.form-control-sm(type='text' name='name' value=employee.name required)
+                .form-group
+                  label(for='title') Title
+                  input.form-control.form-control-sm(type='text' name='title' value=employee.title required)
+                .form-group
+                  label(for='department') Department
+                  input.form-control.form-control-sm(type='text' name='department' value=employee.department required)
+              .col-md-6
+                .form-group
+                  label(for='phoneNumber') Mobile
+                  input.form-control.form-control-sm(type='text' name='phoneNumber' value=employee.phoneNumber required)
+                .form-group
+                  label(for='email') Email
+                  input.form-control.form-control-sm(type='email' name='email' value=employee.email required)
+                .form-group
+                  label(for='status') Status
+                  select.form-control.form-control-sm(name='status' required onchange='checkEmployeeStatus()')
+                    option(value='active' selected=(employee.status === 'active')) Active
+                    option(value='inactive' selected=(employee.status === 'inactive')) Inactive
+                  p#statusError.text-danger(style='display: none;') Employee has assets assigned. Cannot change status to inactive.
+            .row
+              .col-md-12
+                .form-group
+                  label Created By
+                  p= employee.createdAt
+                .form-group
+                  label Last Modified By
+                  p= employee.updatedAt
+            .row
+              .col-md-12.text-center
+                button#saveButton.btn.btn-primary(type='submit' disabled) Save changes
+
+        .tab-pane.fade(id='addAsset' role='tabpanel' aria-labelledby='addAssetTab')
+          if assets.length > 0
+            button.btn.btn-success.mb-3(type='button' data-toggle='modal' data-target='#addAssetModal') Add Asset
+          else
+            p.text-danger No assets available in the inventory.
+          if issuances.length > 0
+            table#employees-table.table.table-sm.table-striped.table-bordered
+              thead
+                tr
+                  th Asset Name
+                  th Quantity
+                  th Issued At
+                  th Return
+              tbody
+                each issuance in issuances
+                  if issuance.quantity > 0
+                    tr
+                      td= issuance.Asset.model
+                      td 
+                        span= issuance.quantity
+                      td= issuance.createdAt
+                      td 
+                        button.btn.btn-sm.btn-danger(type='button' data-toggle='modal' data-target=`#returnAssetModal-${issuance.id}` data-employee-id=employee.id data-issuance-id=issuance.id onclick='getIssuanceDetails(this)') Return
+                        // Return Asset Modal
+                        .modal.fade(id=`returnAssetModal-${issuance.id}` tabindex='-1' role='dialog')
+                          .modal-dialog(role='document')
+                            .modal-content
+                              .modal-header
+                                h5.modal-title Return Asset
+                                button.close(type='button' data-dismiss='modal' aria-label='Close')
+                                  span(aria-hidden='true') &times;
+                              .modal-body
+                                form(id=`returnAssetForm-${issuance.id}` action='/issuance/return' method='post')
+                                  input(type='hidden' name='employeeId' value=employee.id)
+                                  input(type='hidden' name='issuanceId' value=issuance.id)
+                                  .form-group.text-left
+                                    label(for='returnQuantity') Quantity
+                                    input.form-control.form-control-sm(type='number' name='quantity' id=`returnQuantity-${issuance.id}` min='1' required)
+                                  .form-group.text-left
+                                    label(for='reason') Reason
+                                    textarea.form-control.form-control-sm(name='reason' placeholder='Reason for returning the asset' required)
+                                  button.btn.btn-primary(type='submit') Return Asset
+
+  .modal.fade(id='addAssetModal' tabindex='-1' role='dialog')
+    .modal-dialog(role='document')
+      .modal-content
+        .modal-header
+          h5.modal-title Add Asset
+          button.close(type='button' data-dismiss='modal' aria-label='Close')
+            span(aria-hidden='true') &times;
+        .modal-body
+          form(id='addAssetForm' action='/issuance/issue' method='post')
+            input(type='hidden' name='employeeId' value=employee.id)
+            .form-group
+              label(for='assetId') Select Asset
+              select.form-control.form-control-sm(name='assetId' id='assetSelect' required)
+                option(disabled selected) Select the asset
+                if assets.length > 0
+                  each asset in assets
+                    if asset.quantity > 0
+                      option(data-quantity=`${asset.quantity}` data-issued-quantity=`${asset.issuedQuantity || 0}` value=asset.id) #{asset.name} #{asset.model}
+                else
+                  option(disabled) No assets available
+            .form-group
+              label(for='totalQuantity') Total Quantity
+              p#totalQuantity.text-info - 
+            .form-group
+              label(for='quantity') Quantity
+              input.form-control.form-control-sm(type='number' name='quantity' id='assetQuantity' min='1' required disabled)
+              small#quantityError.text-danger(style='display: none;') Quantity exceeds available stock
+            button#issueAssetButton.btn.btn-primary(type='submit' disabled) Issue Asset
+
+  script(src='https://code.jquery.com/jquery-3.5.1.min.js')
+  script(src='https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js')
+  script(src='https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js')
+
+  script(src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js')
+
+  link(rel='stylesheet' href='https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css')
+  link(rel='stylesheet' href='https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css')
+  link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css')
+  
+  link(rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap')
+
+  script.
+    function checkEmployeeStatus() {
+      const statusSelect = document.querySelector('select[name="status"]');
+      const statusError = document.getElementById('statusError');
+      const hasAssets = #{issuances.length > 0};
+
+      if (statusSelect.value === 'inactive' && hasAssets) {
+        statusError.style.display = 'block';
+        document.getElementById('saveButton').disabled = true;
+      } else {
+        statusError.style.display = 'none';
+        document.getElementById('saveButton').disabled = false;
+      }
+    }
+  script.
+    $(document).ready(function() {
+      console.log("DOM is ready");
+      $('#employees-table').DataTable();
+
+      $('#employeeForm input, #employeeForm select').on('change', function() {
+        $('#saveButton').prop('disabled', false);
+      });
+
+      $('#assetSelect').on('change', function() {
+        console.log("Edit asset");
+        var selectedOption = $(this).find('option:selected');
+        var totalQuantity = selectedOption.data('quantity');
+        var issuedQuantity = selectedOption.data('issued-quantity') || 0;
+        $('#totalQuantity').text(`${totalQuantity}`);
+        $('#assetQuantity').val(issuedQuantity);
+        $('#assetQuantity').attr('max', totalQuantity);
+        $('#assetQuantity').attr('disabled', false);
+        $('#quantityError').hide();
+        enableIssueButton();
+      });
+
+      $('#assetQuantity').on('input', function() {
+        enableIssueButton();
+      });
+
+      $('#addAssetForm').on('submit', function(e) {
+        var maxQuantity = $('#assetQuantity').attr('max');
+        var quantity = $('#assetQuantity').val();
+        if (parseInt(quantity) > parseInt(maxQuantity)) {
+          e.preventDefault();
+          $('#quantityError').show();
+        } else {
+          $('#quantityError').hide();
+        }
+      });
+
+      function enableIssueButton() {
+        var quantity = $('#assetQuantity').val();
+        if (quantity > 0) {
+          $('#issueAssetButton').prop('disabled', false);
+        } else {
+          $('#issueAssetButton').prop('disabled', true);
+        }
+      }
+    });
+
+  script.
+    function getIssuanceDetails(button) {
+      const employeeId = button.getAttribute('data-employee-id');
+      const issuanceId = button.getAttribute('data-issuance-id');
+      console.log("Fetching issuance details", employeeId, issuanceId, button);
+      fetch(`/issuance/${employeeId}/${issuanceId}`)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data, data.issuance.quantity, "data from issuance details");
+          const modal = document.querySelector(`#returnAssetModal-${issuanceId}`);
+          const returnQuantityInput = modal.querySelector(`#returnQuantity-${issuanceId}`);
+          
+          returnQuantityInput.setAttribute('max', parseInt(data.issuance.quantity));
+          returnQuantityInput.value = parseInt(data.issuance.quantity);
+
+          returnQuantityInput.addEventListener('input', function() {
+            const quantity = parseInt(this.value);
+            const maxQuantity = parseInt(this.getAttribute('max'));
+            const errorElement = modal.querySelector(`#returnQuantityError-${issuanceId}`);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching issuance details:', error);
+        });
+    }

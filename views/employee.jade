@@ -1,0 +1,141 @@
+extends layout
+
+block content
+  h1(style='font-size: 2rem; font-weight: bold; color: #343a40; text-align: center; margin-bottom: 2rem;') Employees
+
+  .d-flex.justify-content-between.align-items-center.px-2.mt-3.mb-3
+    button.btn.btn-sm.btn-primary(data-toggle='modal' data-target='#addEmployeeModal') Add Employee
+
+    form#filter-form(action='/employees/filter' method='get' class='form-inline')
+      .form-group
+        select.form-control.form-control-sm(name='status' id='status-filter')
+          option(value='') All
+          option(value='active' selected=(status === 'active')) Active
+          option(value='inactive' selected=(status === 'inactive')) Inactive
+      .form-group.mx-2
+        button.btn.btn-sm.btn-secondary(type='button' id='filter-button') Filter
+
+  .table-container(style='overflow-x: auto; padding: 0 1rem;') 
+    table#employees-table.table.table-sm.table-striped.table-bordered(style='margin: 0 auto;')
+      thead
+        tr
+          th Name
+          th Email
+          th Department
+          th Title 
+          th Phone Number
+          th Address
+          th Status
+          th Actions
+
+      tbody
+        each employee in employees
+          tr
+            td= employee.name
+            td= employee.email
+            td= employee.department
+            td= employee.title
+            td= employee.phoneNumber
+            td= employee.address
+            td
+              if employee.status === 'active'
+                span.badge.badge-success Active
+              else
+                span.badge.badge-secondary Inactive
+            td
+              if employee.hasAssets
+                a.btn.btn-sm.btn-danger.mx-1(href=`/employees/${employee.id}#assets`)
+                  i.fas.fa-exclamation
+                  | View Assets
+              else
+                a.btn.btn-sm.btn-primary.mx-1(href=`/employees/${employee.id}`)
+                  i.fas.fa-edit
+                a.btn.btn-sm.btn-success.mx-1(href=`/employees/${employee.id}#assets`)
+                  i.fas.fa-plus
+                  | Add Asset
+
+  .modal.fade(id='addEmployeeModal' tabindex='-1' role='dialog')
+    .modal-dialog(role='document')
+      .modal-content
+        .modal-header
+          h5.modal-title Add Employee
+          button.close(type='button' data-dismiss='modal' aria-label='Close')
+            span(aria-hidden='true') &times;
+        .modal-body
+          if error
+            .alert.alert-danger= error
+          form(action='/employees/add' method='post')
+            .form-group
+              label(for='name') Name
+              input.form-control(type='text' name='name' placeholder='Name' required value=formData && formData.name || '')
+            .form-group
+              label(for='email') Email
+              input.form-control(type='email' name='email' placeholder='Email' required value=formData && formData.email || '')
+            .form-group
+              label(for='status') Status
+              select.form-control(name='status' required)
+                option(value='') Select Status
+                option(value='active' selected=(formData && formData.status === 'active')) Active
+                option(value='inactive' selected=(formData && formData.status === 'inactive')) Inactive
+            .form-group
+              label(for='title') Title
+              input.form-control(type='text' name='title' placeholder='Title' required value=formData && formData.title || '')
+            .form-group
+              label(for='department') Department
+              input.form-control(type='text' name='department' placeholder='Department' required value=formData && formData.department || '')
+            .form-group
+              label(for='phoneNumber') Phone Number
+              input.form-control(type='text' name='phoneNumber' placeholder='Phone Number' required value=formData && formData.phoneNumber || '')
+            .form-group
+              label(for='address') Address
+              input.form-control(type='text' name='address' placeholder='Address' required value=formData && formData.address || '')
+            button.btn.btn-primary(type='submit') Add Employee
+
+  .dataTables_wrapper
+    .dataTables_info(style='text-align: center; padding: 1rem; font-size: 0.875rem;')
+    .dataTables_paginate(style='text-align: center;')
+
+  script(src='https://code.jquery.com/jquery-3.5.1.min.js')
+  script(src='https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js')
+  script(src='https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js')
+  script(src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js')
+  link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css')
+  link(rel='stylesheet' href='https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css')
+  link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css')
+  //- link(rel='stylesheet' href='../styles/custom-dashboard.css')
+
+  script.
+    $(document).ready(function() {
+      var table = $('#employees-table').DataTable({
+        "pagingType": "simple_numbers",
+        "paging": true,
+        "ordering": true,
+        "info": true,
+        "language": {
+          "paginate": {
+            "previous": "&laquo;",
+            "next": "&raquo;"
+          }
+        }
+      });
+
+
+      $('#filter-button').on('click', function() {
+        var status = $('#status-filter').val();
+        $.ajax({
+          url: '/employees/filter',
+          type: 'GET',
+          data: { status: status },
+          success: function(data) {
+            table.clear().draw();
+            table.rows.add(data.employees).draw();
+          },
+          error: function(e) {
+            console.log(e,"error");
+            alert('Failed to fetch filtered data.');
+          }
+        });
+      });
+    });
+
+  

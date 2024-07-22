@@ -1,0 +1,45 @@
+extends layout
+
+block content
+  h1(style='font-size: 2rem; font-weight: bold; color: #343a40; margin-bottom: 1rem; text-align: center;') Asset Tracker Home
+  p(style='font-size: 1.25rem; color: #6c757d; margin-bottom: 2rem; text-align: center;') Welcome to the Asset Tracker application.
+
+  .container(style='margin-top: 2rem;')
+    .row.justify-content-center
+      .col-md-12
+        .dashboard-cards.d-flex.justify-content-between
+          a(href='/assets' style='text-decoration: none;') 
+            .card.custom-card.shadow-lg(style='width: 18rem; border: 2px solid #f8f9fa; border-radius: 0.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease; margin-bottom: 1rem; text-align: center;')
+              .card-body
+                i.fas.fa-boxes.custom-icon(style='font-size: 2rem; color: #007bff; margin-bottom: 1rem;')
+                h5.card-title(style='font-size: 1.25rem; font-weight: bold; color: #343a40;') Total Assets
+                p.card-text.custom-text(style='font-size: 2rem; font-weight: bold; color: #343a40;') #{totalAssets}
+          a(href='/employees' style='text-decoration: none;') 
+            .card.custom-card.shadow-lg(style='width: 18rem; border: 2px solid #f8f9fa; border-radius: 0.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease; margin-bottom: 1rem; text-align: center;')
+              .card-body
+                i.fas.fa-users.custom-icon(style='font-size: 2rem; color: #007bff; margin-bottom: 1rem;')
+                h5.card-title(style='font-size: 1.25rem; font-weight: bold; color: #343a40;') Total Employees
+                p.card-text.custom-text(style='font-size: 2rem; font-weight: bold; color: #343a40;') #{totalEmployees}
+          a(href='/assets' style='text-decoration: none;') 
+            .card.custom-card.shadow-lg(style='width: 18rem; border: 2px solid #f8f9fa; border-radius: 0.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease; margin-bottom: 1rem; text-align: center;')
+              .card-body
+                i.fas.fa-cogs.custom-icon(style='font-size: 2rem; color: #007bff; margin-bottom: 1rem;')
+                h5.card-title(style='font-size: 1.25rem; font-weight: bold; color: #343a40;') Assets in Use
+                p.card-text.custom-text(style='font-size: 2rem; font-weight: bold; color: #343a40;') #{assetsInUse}
+          a(href='/assets' style='text-decoration: none;') 
+            .card.custom-card.shadow-lg(style='width: 18rem; border: 2px solid #f8f9fa; border-radius: 0.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease; margin-bottom: 1rem; text-align: center;')
+              .card-body
+                i.fas.fa-check-circle.custom-icon(style='font-size: 2rem; color: #007bff; margin-bottom: 1rem;')
+                h5.card-title(style='font-size: 1.25rem; font-weight: bold; color: #343a40;') Available Assets
+                p.card-text.custom-text(style='font-size: 2rem; font-weight: bold; color: #343a40;') #{availableAssets}
+
+  script(src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js')
+
+  link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css')
+  link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css')
+
+  style.
+    .custom-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }

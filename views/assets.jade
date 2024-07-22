@@ -1,0 +1,83 @@
+extends layout
+
+block content
+  h1.text-center Assets
+
+  .container
+    ul.nav.nav-tabs
+      li.nav-item
+        a.nav-link.active(href="#addAsset" data-toggle="tab") Add New Asset
+      li.nav-item
+        a.nav-link(href="#viewAssets" data-toggle="tab") View Assets
+
+    .tab-content
+      .tab-pane.fade.show.active#addAsset
+        .card.card-body
+          h3 Add New Asset
+          form(action="/assets/add" method="post" id="addAssetForm" onsubmit="return validateForm()")
+            .form-group
+              input.form-control(type="text" name="uniqueId" id="uniqueId" placeholder="Unique ID" required value=uniqueId)
+            .form-group
+              input.form-control(type="number" name="quantity" id="quantity" placeholder="Quantity" required value=quantity)
+            .form-group
+              input.form-control(type="text" name="model" id="model" placeholder="Model" required value=model)
+            input(type="hidden" name="status" value="Available")
+            button.btn.btn-primary(type="submit") Add Asset
+
+      .tab-pane.fade#viewAssets
+        .card.card-body
+          h3.mt-4 Asset List
+          .table-container
+            table.table.table-striped.table-bordered
+              thead
+                tr
+                  th Unique ID
+                  th Quantity
+                  th Model
+                  th Status
+              tbody
+                each asset in assets
+                  tr
+                    td= asset.uniqueId
+                    td= asset.quantity
+                    td= asset.model
+                    td
+                      if asset.status == 'Available'
+                        span.badge.badge-success= asset.status
+                      else
+                        span.badge.badge-danger= asset.status
+
+    each asset in assets
+      .modal.fade(id=`issueModal${asset.id}` tabindex='-1' role='dialog')
+        .modal-dialog(role='document')
+          .modal-content
+            .modal-header
+              h5.modal-title Issue Asset
+              button.close(type='button' data-dismiss='modal' aria-label='Close')
+                span(aria-hidden='true') &times;
+            .modal-body
+              form(action="/issuance/issue" method="post")
+                input(type="hidden" name="assetId" value=asset.id)
+                .form-group
+                  label(for="quantity") Quantity
+                  input.form-control(type="number" name="quantity" min="1" max=asset.quantity placeholder=`Max: ${asset.quantity}` required)
+                button.btn.btn-primary(type="submit") Issue
+
+script(src='https://code.jquery.com/jquery-3.5.1.min.js')
+script(src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js')
+link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css')
+link(rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap')
+
+script.
+  function validateForm() {
+    const uniqueId = document.getElementById('uniqueId').value.trim();
+    const quantity = document.getElementById('quantity').value.trim();
+    const model = document.getElementById('model').value.trim();
+
+    if (!uniqueId || !quantity || !model) {
+      alert('All fields are required.');
+      return false;
+    }
+
+    return true;
+  }

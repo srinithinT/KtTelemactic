@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "srinithin",
+    "password": "Srinithin",
+    "database": "assetCreation",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "srinithin",
+    "password": "Srinithin",
+    "database": "assetCreation_test",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "srinithin",
+    "password": "Srinithin",
+    "database": "assetCreation",
+    "host": "localhost",
+    "dialect": "postgres"
+  }
+}
